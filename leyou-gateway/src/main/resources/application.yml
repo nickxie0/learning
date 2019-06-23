@@ -28,3 +28,19 @@ ribbon:
   MaxAutoRetries: 0  # 当前服务重试次数
   MaxAutoRetriesNextServer: 1 # 切换服务重试次数
   OkToRetryOnAllOperations: false # 是否对所有的请求方式都重试，只对get请求重试
+ly:                    #跨域
+  cors:
+    allowedOrigins:    #允许跨域的域名
+      - http://manage.leyou.com
+    allowedCredentials: true   #是否允许使用cookie
+    allowedHeaders:
+      - "*"
+    allowedMethods:
+      - GET
+      - POST
+      - DELETE
+      - PUT
+      - OPTIONS
+      - HEAD
+    maxAge: 360000
+    filterPath: "/**"
