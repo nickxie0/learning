@@ -15,3 +15,13 @@ eureka:
   instance:
     prefer-ip-address: true
     ip-address: 127.0.0.1
+mybatis:
+  mapper-locations: mappers/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases-package: com.leyou.item.entity
+mapper:
+  wrap-keyword: "`{0}`"
+logging:
+  level:
+    com.leyou: debug
