@@ -79,4 +79,30 @@ public class BrandService {
             throw new LyException(ExceptionEnum.INSERT_OPERATION_FAIL);
         }
     }
+
+    /**
+     * 根据id查询BrandDTO
+     * @param id
+     * @return
+     */
+    public BrandDTO queryById(Long id) {
+        Brand brand = brandMapper.selectByPrimaryKey(id);
+        if (brand == null) {
+            throw new LyException(ExceptionEnum.BRAND_NOT_FOUND);
+        }
+        return BeanHelper.copyProperties(brand, BrandDTO.class);
+    }
+
+    /**
+     * 根据分类id查询品牌
+     * @param id
+     * @return
+     */
+    public List<BrandDTO> querBrandByCid(Long id) {
+        List<Brand> list = brandMapper.queryBrandByCid(id);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new LyException(ExceptionEnum.BRAND_NOT_FOUND);
+        }
+        return BeanHelper.copyWithCollection(list, BrandDTO.class);
+    }
 }

@@ -28,8 +28,19 @@ public class SpecController {
         return ResponseEntity.ok(specService.querySpecGroupByCid(cid));
     }
 
+    /**
+     * 根据id查询规格参数
+     *
+     * @param gid
+     * @param cid
+     * @return
+     */
     @GetMapping("params")
-    public ResponseEntity<List<SpecParamDTO>> queryParamByGid(@RequestParam("gid") Long gid) {
-        return ResponseEntity.ok(specService.queryParamByGid(gid));
+    public ResponseEntity<List<SpecParamDTO>> querySpecParams(
+            @RequestParam(value = "gid", required = false) Long gid,
+            @RequestParam(value = "cid", required = false) Long cid,
+            @RequestParam(value = "searching", required = false) Boolean searching
+    ) {
+        return ResponseEntity.ok(specService.querySpecParams(gid, cid, searching));
     }
 }

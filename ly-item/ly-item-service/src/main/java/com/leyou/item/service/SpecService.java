@@ -60,4 +60,23 @@ public class SpecService {
         return BeanHelper.copyWithCollection(list, SpecParamDTO.class);
 
     }
+
+
+    /**
+     * 根据条件查询规格参数
+     * @param gid
+     * @param cid
+     * @param searching
+     * @return
+     */
+    public List<SpecParamDTO> querySpecParams(Long gid, Long cid, Boolean searching) {
+        SpecParam param = new SpecParam();
+        param.setGroupId(gid);
+        param.setCid(cid);
+        List<SpecParam> list = paramMapper.select(param);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new LyException(ExceptionEnum.SPEC_NOT_FOUND);
+        }
+        return BeanHelper.copyWithCollection(list, SpecParamDTO.class);
+    }
 }
