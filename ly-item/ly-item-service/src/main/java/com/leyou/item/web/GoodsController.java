@@ -28,12 +28,12 @@ public class GoodsController {
      */
     @GetMapping("spu/page")
     public ResponseEntity<PageResult<SpuDTO>> querySpuByPage(
-            @RequestParam(value = "key",required = false) String key,
-            @RequestParam(value = "rows",defaultValue = "5") Integer rows,
-            @RequestParam(value = "page",defaultValue = "1") Integer page,
-            @RequestParam(value = "saleable",required = false) Boolean saleable
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "rows", defaultValue = "5") Integer rows,
+            @RequestParam(value = "saleable", required = false) Boolean saleable,
+            @RequestParam(value = "key", required = false) String key
     ) {
-        return ResponseEntity.ok(goodService.querySpuByPage(key, rows, page, saleable));
+        return ResponseEntity.ok(goodService.querySpuByPage(page, rows, saleable, key));
     }
 
     /**

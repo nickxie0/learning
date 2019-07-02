@@ -41,14 +41,13 @@ public class GoodService {
 
     /**
      * 分页查询商品
-     *
-     * @param key
-     * @param rows
      * @param page
+     * @param rows
      * @param saleable
+     * @param key
      * @return
      */
-    public PageResult<SpuDTO> querySpuByPage(String key, Integer rows, Integer page, Boolean saleable) {
+    public PageResult<SpuDTO> querySpuByPage(Integer page, Integer rows, Boolean saleable, String key) {
         //分页
         PageHelper.startPage(page, rows);
         //条件过滤

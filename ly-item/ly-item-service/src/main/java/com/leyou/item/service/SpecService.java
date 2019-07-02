@@ -9,7 +9,6 @@ import com.leyou.item.entity.SpecGroup;
 import com.leyou.item.entity.SpecParam;
 import com.leyou.item.mapper.SpecGroupMapper;
 import com.leyou.item.mapper.SpecParamMapper;
-import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
