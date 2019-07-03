@@ -19,6 +19,15 @@ public interface ItemClient {
     @GetMapping("brand/{id}")
     BrandDTO queryBrandById(@PathVariable("id") Long id);
 
+
+    /**
+     * 根据id集合查询品牌
+     * @param id
+     * @return
+     */
+    @GetMapping("/brand/list")
+    List<BrandDTO> queryBrandByIds(@RequestParam("ids") List<Long> ids);
+
     /**
      * 根据id的集合查询商品分类
      * @param idList 商品分类的id集合

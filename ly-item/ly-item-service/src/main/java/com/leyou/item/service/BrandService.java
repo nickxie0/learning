@@ -105,4 +105,17 @@ public class BrandService {
         }
         return BeanHelper.copyWithCollection(list, BrandDTO.class);
     }
+
+    /**
+     * 根据id集合查询品牌
+     * @param ids
+     * @return
+     */
+    public List<BrandDTO> queryBrandByIds(List<Long> ids) {
+        List<Brand> list = brandMapper.selectByIdList(ids);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new LyException(ExceptionEnum.BRAND_NOT_FOUND);
+        }
+        return BeanHelper.copyWithCollection(list,BrandDTO.class);
+    }
 }
