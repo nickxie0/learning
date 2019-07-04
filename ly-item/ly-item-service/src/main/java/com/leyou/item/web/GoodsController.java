@@ -91,4 +91,14 @@ public class GoodsController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    /**
+     *根据id查询spu
+     * @param id
+     * @return
+     */
+    @GetMapping("/spu/{id}")
+    public ResponseEntity<SpuDTO> queryById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(goodService.querySpuById(id));
+    }
+
 }

@@ -13,7 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class SpecService {
@@ -77,5 +81,36 @@ public class SpecService {
             throw new LyException(ExceptionEnum.SPEC_NOT_FOUND);
         }
         return BeanHelper.copyWithCollection(list, SpecParamDTO.class);
+    }
+
+    /**
+     * 根据分类id查询规格组及组内参数
+     * @param id
+     * @return
+     */
+    public List<SpecGroupDTO> querySpecs(Long id) {
+        List<SpecGroupDTO> groupList = querySpecGroupByCid(id);
+
+        List<SpecParamDTO> params = querySpecParams(null, id, null);
+
+        //尝试对params进行分组，根据groupId，结果应该是Map<Long,List<SpecParamDTO>>
+        Map<Long, List<SpecParamDTO>> map = params.stream()
+                .collect(Collectors.groupingBy(SpecParamDTO::getGroupId));
+
+       /* Map<Long, List<SpecParamDTO>> map = new HashMap<>();
+
+        for (SpecParamDTO param : params) {
+            if (!map.containsKey(param.getGroupId())) {
+                //当前不存在该组，则创建组
+                map.put(param.getGroupId(), new ArrayList<>());
+            }
+            //存在该组，则进入该组
+            map.get(param.getGroupId()).add(param);
+        }*/
+
+        for (SpecGroupDTO group : groupList) {
+            group.setParams(map.get(group.getId()));
+        }
+        return groupList;
     }
 }

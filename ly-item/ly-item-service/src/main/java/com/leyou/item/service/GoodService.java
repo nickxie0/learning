@@ -241,4 +241,23 @@ public class GoodService {
         //新增sku
         insertSkuList(spuDTO.getSkus(),spu.getId());
     }
+
+    /**
+     * 根据id查询spu
+     * @param id
+     * @return
+     */
+    public SpuDTO querySpuById(Long id) {
+        Spu spu = spuMapper.selectByPrimaryKey(id);
+        if (spu == null) {
+            throw new LyException(ExceptionEnum.GOODS_NOT_FOUND);
+        }
+        SpuDTO spuDTO = BeanHelper.copyProperties(spu, SpuDTO.class);
+        //查询detail
+        spuDTO.setSpuDetail(queryDetailBySpuId(id));
+        //查询skus
+        spuDTO.setSkus(querySkuBySpuId(id));
+
+        return spuDTO;
+    }
 }

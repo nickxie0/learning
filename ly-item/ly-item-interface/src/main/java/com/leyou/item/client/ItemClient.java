@@ -80,4 +80,23 @@ public interface ItemClient {
             @RequestParam(value = "cid", required = false) Long cid,
             @RequestParam(value = "searching", required = false) Boolean searching
     );
+
+    /**
+     * 根据id查询spu
+     * @param id
+     * @return
+     */
+    @GetMapping("/spu/{id}")
+    SpuDTO querySpuById(@PathVariable("id")Long id);
+
+
+    /**
+     * 根据分类id查询规格组及组内参数
+     * @param id
+     * @return
+     */
+    @GetMapping("/spec/list")
+    List<SpecGroupDTO> querySpecs(@RequestParam("id") Long id);
+
+
 }

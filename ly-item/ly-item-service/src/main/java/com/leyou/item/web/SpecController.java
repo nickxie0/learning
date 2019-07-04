@@ -43,4 +43,17 @@ public class SpecController {
     ) {
         return ResponseEntity.ok(specService.querySpecParams(gid, cid, searching));
     }
+
+
+
+    /**
+     * 根据分类id查询规格组及组内参数
+     * @param id
+     * @return
+     */
+    @GetMapping("list")
+    public ResponseEntity<List<SpecGroupDTO>> querySpecs(@RequestParam("id") Long id){
+        return ResponseEntity.ok(specService.querySpecs(id));
+    }
+
 }
