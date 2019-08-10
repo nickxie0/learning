@@ -73,14 +73,30 @@ public class SpecService {
      * @return
      */
     public List<SpecParamDTO> querySpecParams(Long gid, Long cid, Boolean searching) {
+        // 健壮性
+        if (gid == null && cid == null && searching == null) {
+            throw new LyException(ExceptionEnum.INVALID_PARAM_ERROR);
+        }
+        // 查询条件，是根据当前对象的非空字段
         SpecParam param = new SpecParam();
+        param.setGroupId(gid);
+        param.setCid(cid);
+        param.setSearching(searching);
+        List<SpecParam> list = paramMapper.select(param);
+        // 健壮性判断
+        if (CollectionUtils.isEmpty(list)) {
+            throw new LyException(ExceptionEnum.SPEC_NOT_FOUND);
+        }
+        return BeanHelper.copyWithCollection(list, SpecParamDTO.class);
+
+        /*SpecParam param = new SpecParam();
         param.setGroupId(gid);
         param.setCid(cid);
         List<SpecParam> list = paramMapper.select(param);
         if (CollectionUtils.isEmpty(list)) {
             throw new LyException(ExceptionEnum.SPEC_NOT_FOUND);
         }
-        return BeanHelper.copyWithCollection(list, SpecParamDTO.class);
+        return BeanHelper.copyWithCollection(list, SpecParamDTO.class);*/
     }
 
     /**

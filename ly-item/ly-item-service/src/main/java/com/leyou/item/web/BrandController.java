@@ -71,7 +71,7 @@ public class BrandController {
 
     /**
      * 根据id集合查询品牌
-     * @param id
+     * @param ids
      * @return
      */
     @GetMapping("/list")

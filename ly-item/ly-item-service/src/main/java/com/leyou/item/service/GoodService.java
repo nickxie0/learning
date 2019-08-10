@@ -2,6 +2,7 @@ package com.leyou.item.service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.leyou.common.constants.MQConstants;
 import com.leyou.common.enums.ExceptionEnum;
 import com.leyou.common.exceptions.LyException;
 import com.leyou.common.utils.BeanHelper;
@@ -14,6 +15,8 @@ import com.leyou.item.mapper.SkuMapper;
 import com.leyou.item.mapper.SpuDetailMapper;
 import com.leyou.item.mapper.SpuMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +41,9 @@ public class GoodService {
 
     @Autowired
     private SkuMapper skuMapper;
+
+    @Autowired
+    private AmqpTemplate amqpTemplate;
 
     /**
      * 分页查询商品
@@ -166,7 +172,14 @@ public class GoodService {
         if (count <= 0) {
             throw new LyException(ExceptionEnum.UPDATE_OPERATION_FAIL);
         }
+
+        //发送消息
+        String routingKey = saleable ? MQConstants.RoutingKey.ITEM_UP_KEY:MQConstants.RoutingKey.ITEM_DOWN_KEY;
+        amqpTemplate.convertAndSend(
+                MQConstants.Exchange.ITEM_EXCHANGE_NAME, routingKey, id);
     }
+
+
 
     /**
      * 根据spuId查询spuDetail
@@ -259,5 +272,13 @@ public class GoodService {
         spuDTO.setSkus(querySkuBySpuId(id));
 
         return spuDTO;
+    }
+
+    public List<SkuDTO> querySkuByIds(List<Long> ids) {
+        List<Sku> list = skuMapper.selectByIdList(ids);
+        if (CollectionUtils.isEmpty(list)) {
+            throw new LyException(ExceptionEnum.GOODS_NOT_FOUND);
+        }
+        return BeanHelper.copyWithCollection(list, SkuDTO.class);
     }
 }

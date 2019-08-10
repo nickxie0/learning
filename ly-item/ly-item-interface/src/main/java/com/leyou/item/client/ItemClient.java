@@ -22,7 +22,7 @@ public interface ItemClient {
 
     /**
      * 根据id集合查询品牌
-     * @param id
+     * @param ids
      * @return
      */
     @GetMapping("/brand/list")
@@ -98,5 +98,6 @@ public interface ItemClient {
     @GetMapping("/spec/list")
     List<SpecGroupDTO> querySpecs(@RequestParam("id") Long id);
 
-
+    @GetMapping("/sku/list")
+    List<SkuDTO> querySkuByIds(@RequestParam("ids") List<Long> ids);
 }

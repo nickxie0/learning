@@ -11,11 +11,9 @@ import com.leyou.item.dto.*;
 import com.leyou.search.dto.GoodsDTO;
 import com.leyou.search.dto.SearchRequest;
 import com.leyou.search.pojo.Goods;
+import com.leyou.search.repository.GoodsRepository;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.Operator;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -48,7 +46,7 @@ public class SearchService {
         String all = spu.getName() + brand.getName() + name;
 
         // 2.spu下的sku的集合
-        List<SkuDTO> skuList = itemClient.querySkuBySpuId(spu.getId());
+        List<SkuDTO> skuList = CollectionUtils.isEmpty(spu.getSkus()) ? itemClient.querySkuBySpuId(spu.getId()) : spu.getSkus();
         List<Map<String, Object>> skuMap = new ArrayList<>();
         for (SkuDTO skuDTO : skuList) {
             Map<String, Object> sku = new HashMap<>();
@@ -68,7 +66,7 @@ public class SearchService {
         List<SpecParamDTO> params = itemClient.querySpecParams(null, spu.getCid3(), true);
 
         // 4.2.查询规格值（tb_spu_detail)
-        SpuDetailDTO detail = itemClient.querySpuDetailById(spu.getId());
+        SpuDetailDTO detail = spu.getSpuDetail() == null ? itemClient.querySpuDetailById(spu.getId()) : spu.getSpuDetail();
         // 4.2.1.取出通用规格参数
         Map<Long, Object> genericSpec = JsonUtils.toMap(detail.getGenericSpec(), Long.class, Object.class);
         // 4.2.2.取出特有规格参数
@@ -154,33 +152,40 @@ public class SearchService {
     @Autowired
     private ElasticsearchTemplate esTemplate;
 
-    public PageResult<GoodsDTO> search(SearchRequest request) {
-        // 0.创建查询条件构建器
-        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
-        // 1.准备查询条件
-        // 1.0.控制返回的结果
-        queryBuilder.withSourceFilter(new FetchSourceFilter(new String[]{"id", "subTitle", "skus"}, new String[0]));
-        // 1.1.搜索关键字
-        QueryBuilder basicQueryBuilder = buildBasicQuery(request);
-        queryBuilder.withQuery(basicQueryBuilder);
 
-        // 1.2.分页
-        int page = request.getPage() - 1;
-        int size = request.getSize();
-        queryBuilder.withPageable(PageRequest.of(page, size));
+    /**
+     * 查询分页商品列表
+     * @param request
+     * @return
+     */
+   public PageResult<GoodsDTO> search(SearchRequest request) {
+       // 0.创建查询条件构建器
+       NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+       //1.准备查询条件
+       //1.1控制返回结果
+       queryBuilder.withSourceFilter(new FetchSourceFilter(new String[]{"id", "subTitle", "skus"},new String[0]));
 
-        // 2.搜索结果
-        AggregatedPage<Goods> result = esTemplate.queryForPage(queryBuilder.build(), Goods.class);
 
-        // 3.解析结果
-        // 3.1.分页结果
-        long total = result.getTotalElements();
-        int totalPages = result.getTotalPages();
-        List<Goods> list = result.getContent();
-        // 3.2.DTO转换
-        List<GoodsDTO> dtoList = BeanHelper.copyWithCollection(list, GoodsDTO.class);
-        return new PageResult<>(total, totalPages, dtoList);
-    }
+       QueryBuilder basicQueryBuilder = buildBasicQuery(request);
+       queryBuilder.withQuery(basicQueryBuilder);
+       //分页
+       int page = request.getPage() - 1;
+       int size = request.getSize();
+       queryBuilder.withPageable(PageRequest.of(page, size));
+
+       //搜索结果
+       AggregatedPage<Goods> result = esTemplate.queryForPage(queryBuilder.build(), Goods.class);
+
+       //解析结果
+       //分页数据
+       long total = result.getTotalElements();
+       int totalPages = result.getTotalPages();
+       List<Goods> list = result.getContent();
+
+       List<GoodsDTO> goodsDTOList = BeanHelper.copyWithCollection(list, GoodsDTO.class);
+
+       return new PageResult<>(total, totalPages, goodsDTOList);
+   }
 
     private QueryBuilder buildBasicQuery(SearchRequest request) {
         String key = request.getKey();
@@ -216,6 +221,11 @@ public class SearchService {
         return queryBuilder;
     }
 
+    /**
+     * 过滤项查询
+     * @param request
+     * @return
+     */
     public Map<String, List<?>> querySearchFilter(SearchRequest request) {
         // 1.准备过滤项的map
         Map<String, List<?>> filterList = new LinkedHashMap<>();
@@ -224,8 +234,10 @@ public class SearchService {
         // 2.0.控制返回的结果
         queryBuilder.withSourceFilter(new FetchSourceFilter(new String[]{""}, new String[0]));
         // 2.1.搜索关键字
-        QueryBuilder basicQuery = buildBasicQuery(request);
-        queryBuilder.withQuery(basicQuery);
+        QueryBuilder basicQueryBuilder = buildBasicQuery(request);
+
+        queryBuilder.withQuery(basicQueryBuilder);
+
         // 2.2.分页，控制结果为1
         queryBuilder.withPageable(PageRequest.of(0, 1));
 
@@ -247,13 +259,13 @@ public class SearchService {
 
         // 判断分类是否只剩下一个
         if (idList != null && idList.size() == 1) {
-            handleSpecAgg(idList.get(0), basicQuery, filterList);
+            handleSpecAgg(idList.get(0), basicQueryBuilder, filterList);
         }
         // 返回
         return filterList;
     }
 
-    private void handleSpecAgg(Long cid, QueryBuilder basicQuery, Map<String, List<?>> filterList) {
+    private void handleSpecAgg(Long cid, QueryBuilder basicQueryBuilder, Map<String, List<?>> filterList) {
         // 1、根据分类查询searching为true的规格
         List<SpecParamDTO> params = itemClient.querySpecParams(null, cid, true);
 
@@ -263,7 +275,7 @@ public class SearchService {
         // 2.0.控制返回的结果
         queryBuilder.withSourceFilter(new FetchSourceFilter(new String[]{""}, new String[0]));
         // 2.1.搜索关键字
-        queryBuilder.withQuery(basicQuery);
+        queryBuilder.withQuery(basicQueryBuilder);
         // 2.2.分页，控制结果为1
         queryBuilder.withPageable(PageRequest.of(0, 1));
 
@@ -278,6 +290,7 @@ public class SearchService {
         AggregatedPage<Goods> result = esTemplate.queryForPage(queryBuilder.build(), Goods.class);
         // 5、解析聚合结果
         Aggregations aggs = result.getAggregations();
+        System.out.println(filterList);
         for (SpecParamDTO param : params) {
             // 取出参数名称，作为聚合名称
             String name = param.getName();
@@ -312,5 +325,31 @@ public class SearchService {
         List<BrandDTO> brandList = itemClient.queryBrandByIds(idList);
         // 存入map
         filterList.put("品牌", brandList);
+    }
+
+
+    @Autowired
+    private GoodsRepository goodsRepository;
+
+    /**
+     * 在索引库中新增
+     * @param id
+     */
+    public void createIndex(Long id) {
+        //查询spu
+        SpuDTO spu = itemClient.querySpuById(id);
+        //构建goods
+        Goods goods = buildGoods(spu);
+
+        //写入索引库
+        goodsRepository.save(goods);
+    }
+
+    /**
+     * 删除索引库中该商品
+     * @param id
+     */
+    public void deleteById(Long id) {
+        goodsRepository.deleteById(id);
     }
 }

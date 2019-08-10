@@ -7,6 +7,11 @@ spring:
     elasticsearch:
       cluster-name: heima-elastic
       cluster-nodes: 192.168.15.128:9300
+  rabbitmq:
+    host: 192.168.15.128
+    username: leyou
+    password: 1143454547zw
+    virtual-host: /leyou
 eureka:
   client:
     service-url:

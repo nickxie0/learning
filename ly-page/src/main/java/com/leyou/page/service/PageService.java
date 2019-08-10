@@ -69,4 +69,15 @@ public class PageService {
         }
 
     }
+
+    public void deleteItemHtml(Long id) {
+        //准备文件路径
+        File file = new File(HTML_DIR, id + ".html");
+        if (file.exists()) {
+            boolean result = file.delete();
+            if (!result) {
+                throw new LyException(ExceptionEnum.DELETE_OPERATION_FAIL);
+            }
+        }
+    }
 }

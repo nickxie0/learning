@@ -37,4 +37,5 @@ public class SearchController {
     public ResponseEntity<Map<String, List<?>>> querySearchFilter(@RequestBody SearchRequest request) {
         return ResponseEntity.ok(searchService.querySearchFilter(request));
     }
+
 }

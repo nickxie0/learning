@@ -2,7 +2,9 @@ server:
   port: 10010
 spring:
   application:
-    name: ly-gateway
+    name: api-gateway
+  redis:
+    host: 192.168.15.128
 eureka:
   client:
     service-url:
@@ -17,6 +19,14 @@ zuul:
     item-service: /item/** # 将商品微服务映射到/item/**
     upload-service: /upload/** # 将文件上传微服务映射到/upload/**
     search-service: /search/**
+    user-service: /user/**
+    auth-service: /auth/**
+    cart-service: /cart/**
+    order-service:
+      path: /order/**
+      serviceId: order-service
+      strip-prefix: false
+  sensitive-headers:
 hystrix:
   command:
     default:
@@ -47,3 +57,20 @@ ly:                    #跨域
       - HEAD
     maxAge: 360000
     filterPath: "/**"
+  jwt:
+    pubKeyPath: D:/IntelliJ IDEA WorkSpace/ssh/id_rsa.pub # C:/develop/ssh/id_rsa.pub # 公钥地址
+    user:
+      cookieName: LY_TOKEN # cookie名称
+    app:
+      id: 7
+      secret: ${spring.application.name}
+      headerName: privilege_token
+  filter:
+    allowPaths:
+      - /api/auth/login
+      - /api/auth/verify
+      - /api/search
+      - /api/user/register
+      - /api/user/check
+      - /api/user/code
+      - /api/item
